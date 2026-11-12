@@ -1,335 +1,139 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <meta name="theme-color" content="#fffcff">
   <title>Amortizing Force-Aware Retargeting for Scalable Human-to-Robot Data Generation</title>
   <meta name="description" content="We amortize force-aware dexterous retargeting by learning residual control corrections from physics-optimized trajectories, enabling scalable generation of physically executable robot demonstrations from human videos.">
   <meta name="keywords" content="human-to-robot retargeting, dexterous manipulation, force-aware retargeting, residual learning, DexYCB, LEAP Hand">
   <meta name="author" content="Sohyeon Im, Sangmoon Lee">
   <meta name="robots" content="index, follow">
-
   <meta property="og:type" content="article">
   <meta property="og:title" content="Amortizing Force-Aware Retargeting for Scalable Human-to-Robot Data Generation">
   <meta property="og:description" content="Learned residual corrections replace per-demonstration force-aware optimization for scalable human-to-robot data generation.">
   <meta property="og:url" content="https://namaewa-im.github.io/amortizing_retargeting/">
   <meta property="og:image" content="https://namaewa-im.github.io/amortizing_retargeting/static/images/overview.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Amortizing Force-Aware Retargeting for Scalable Human-to-Robot Data Generation">
-  <meta name="twitter:image" content="https://namaewa-im.github.io/amortizing_retargeting/static/images/overview.png">
-
   <meta name="citation_title" content="Amortizing Force-Aware Retargeting for Scalable Human-to-Robot Data Generation">
   <meta name="citation_author" content="Im, Sohyeon">
   <meta name="citation_author" content="Lee, Sangmoon">
   <meta name="citation_publication_date" content="2026">
-
   <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="static/css/bulma.min.css">
-  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
-  <link rel="stylesheet" href="static/css/index.css">
-  <script defer src="static/js/fontawesome.all.min.js"></script>
-  <script defer src="static/js/index.js"></script>
-
-  <style>
-    .figure-caption { font-size: 0.95rem; color: #4a4a4a; margin-top: 0.75rem; text-align: left; }
-    .result-figure { width: 100%; height: auto; border-radius: 6px; }
-    .rollout-block { margin-bottom: 2rem; }
-    .rollout-block h4 { margin-bottom: 0.5rem !important; }
-    .tag-success { color: #2e7d32; font-weight: 600; }
-    .tag-failure { color: #c62828; font-weight: 600; }
-    .results-table { margin: 0 auto; }
-    .results-table td, .results-table th { text-align: center !important; vertical-align: middle; }
-    .results-table td:first-child, .results-table th:first-child { text-align: left !important; }
-    .button[disabled] { opacity: 0.55; cursor: default; }
-    .tabs li a { font-weight: 600; }
-    .rollout-panel { display: none; }
-    .rollout-panel.is-active { display: block; }
-  </style>
+  <link rel="stylesheet" href="static/css/style.css">
+  <script src="static/js/rollouts.js" defer></script>
+  <script src="static/js/app.js" defer></script>
+  <script>window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };</script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
 </head>
 <body>
-
-  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
-    <i class="fas fa-chevron-up"></i>
-  </button>
-
-  <main id="main-content">
-
-  <!-- Title -->
-  <section class="hero">
-    <div class="hero-body">
-      <div class="container is-max-desktop">
-        <div class="columns is-centered">
-          <div class="column has-text-centered">
-            <h1 class="title is-2 publication-title">Amortizing Force-Aware Retargeting<br>for Scalable Human-to-Robot Data Generation</h1>
-            <div class="is-size-5 publication-authors">
-              <span class="author-block">Sohyeon Im,</span>
-              <span class="author-block">Sangmoon Lee<sup>&dagger;</sup></span>
-            </div>
-            <div class="is-size-5 publication-authors">
-              <span class="author-block">School of Electronic and Electrical Engineering, Kyungpook National University</span>
-              <span class="eql-cntrb"><small><br><sup>&dagger;</sup>Corresponding author</small></span>
-            </div>
-
-            <div class="publication-links">
-              <!-- TODO: add paper link -->
-              <span class="link-block">
-                <a class="external-link button is-normal is-rounded is-dark" disabled>
-                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
-                  <span>Paper (coming soon)</span>
-                </a>
-              </span>
-              <!-- TODO: add code link -->
-              <span class="link-block">
-                <a class="external-link button is-normal is-rounded is-dark" disabled>
-                  <span class="icon"><i class="fab fa-github"></i></span>
-                  <span>Code (coming soon)</span>
-                </a>
-              </span>
-              <span class="link-block">
-                <a href="#results" class="external-link button is-normal is-rounded is-dark">
-                  <span class="icon"><i class="fas fa-chart-bar"></i></span>
-                  <span>Results</span>
-                </a>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Teaser: overview figure -->
-  <section class="hero teaser">
-    <div class="container is-max-desktop">
-      <div class="hero-body">
-        <img src="static/images/overview.png" class="result-figure" alt="Overview of amortized force-aware retargeting">
-        <p class="figure-caption">
-          <b>Overview.</b> (a) <b>Training:</b> an MLP predicts residual corrections from contact-aware (CA) reference and planned contact features,
-          supervised by the difference between force-aware (FA) optimized controls and CA reference controls.
-          (b) <b>Inference:</b> predicted residuals are added to CA reference controls to generate corrected trajectories for open-loop execution.
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Abstract -->
-  <section class="section hero is-light">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered has-text-centered">
-        <div class="column is-four-fifths">
-          <h2 class="title is-3">Abstract</h2>
-          <div class="content has-text-justified">
-            <p>
-              We present a framework that amortizes force-aware retargeting by learning reusable control corrections from physics-optimized robot trajectories.
-              Human demonstrations offer scalable data for robot learning, but kinematic retargeting does not guarantee physical executability,
-              while physics-based optimization is costly for each demonstration. Our framework replaces per-demonstration force-aware optimization
-              with learned residual corrections. This approach is implemented by training a lightweight MLP to predict the residual between
-              contact-aware reference controls and force-aware optimized controls generated by
-              <a href="https://wmz1226.github.io/DexForge/" target="_blank">DexForge</a>.
-              The predicted residuals are added to the contact-aware reference controls to generate corrected control trajectories for new demonstrations.
-            </p>
-            <p>
-              Through simulation experiments retargeting DexYCB human demonstrations to a LEAP Hand, we achieve execution success rates of
-              <b>33.7%</b> on unseen subjects and <b>47.4%</b> on unseen objects, substantially improving upon the respective 2.0% and 0.0%
-              success rates of the contact-aware retargeting baseline. With reduced computational cost, our approach offers a promising direction
-              for scalable generation of physically executable robot demonstrations.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Method -->
-  <section class="section">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <h2 class="title is-3 has-text-centered">Method</h2>
-          <div class="content has-text-justified">
-            <p>
-              <b>Residual control learning.</b> DexForge's contact-aware (CA) retargeting produces reference position-control targets
-              \(u_k^{\mathrm{CA}}\) and a contact plan adapted to the robot hand; force-aware (FA) retargeting then optimizes these targets in a
-              physics simulator to obtain \(u_k^{\mathrm{FA}}\). We learn the residual
-              \(\Delta u_k^* = u_k^{\mathrm{FA}} - u_k^{\mathrm{CA}}\) (22-D: 6 global hand pose + 16 finger joints) with a lightweight MLP
-              (two hidden layers of 256 units). Inputs are CA reference controls and velocities, planned fingertip contacts,
-              the gravity direction in the object frame, and the reference object velocity.
-            </p>
-            <p>
-              <b>Open-loop trajectory generation.</b> For a new demonstration we run only CA retargeting, predict the residual, and execute the corrected
-              target \(\hat{u}_k = u_k^{\mathrm{CA}} + f_\theta(z_k)\) open-loop at 100&nbsp;Hz, replacing per-demonstration FA optimization.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Results -->
-  <section class="section hero is-light" id="results">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column is-four-fifths">
-          <h2 class="title is-3 has-text-centered">Generalization to Unseen Subjects and Objects</h2>
-          <div class="content has-text-justified">
-            <p>
-              We retarget DexYCB human demonstrations to a LEAP Hand in simulation and evaluate on the official
-              <b>S1</b> (unseen subjects) and <b>S3</b> (unseen objects) splits, plus an exploratory <b>S1&times;S3</b> setting
-              combining both exclusions (15 demonstrations).
-            </p>
-          </div>
-          <div class="table-container">
-            <table class="table is-striped is-hoverable results-table">
-              <thead>
-                <tr>
-                  <th>Method</th>
-                  <th>Unseen subjects (S1)</th>
-                  <th>Unseen objects (S3)</th>
-                  <th>Both (S1&times;S3)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>CA</td><td>2.0</td><td>0.0</td><td>0.0</td></tr>
-                <tr><td>Direct FA prediction</td><td>9.9</td><td>16.2</td><td>&ndash;</td></tr>
-                <tr><td><b>CA + Residual (Ours)</b></td><td><b>33.7 &plusmn; 4.3</b></td><td><b>47.4 &plusmn; 3.5</b></td><td><b>55.6 &plusmn; 3.8</b></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <p class="figure-caption">
-            Execution success rate (%). Ours reports mean &plusmn; sample standard deviation over three seeds.
-            Direct FA prediction uses the same inputs, data, and MLP but regresses full FA controls instead of residuals.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Qualitative -->
-  <section class="section">
-    <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">Qualitative Rollouts</h2>
-      <p class="has-text-centered mb-4">CA vs. FA vs. CA + Residual (Ours) on the same demonstrations.</p>
-
-      <div class="tabs is-centered is-toggle is-small" id="rollout-tabs">
-        <ul>
-          <li class="is-active" data-target="panel-s1"><a>Unseen subjects (S1)</a></li>
-          <li data-target="panel-s3"><a>Unseen objects (S3)</a></li>
-          <li data-target="panel-s1xs3"><a>Both (S1&times;S3)</a></li>
-        </ul>
-      </div>
-
-      <div class="rollout-panel is-active" id="panel-s1">
-        <div class="rollout-block">
-          <h4 class="title is-6"><span class="tag-success">Ours succeeds, FA fails</span> &mdash; large marker</h4>
-          <img src="static/images/rollout_s1_success.png" class="result-figure" alt="S1 success: large marker" loading="lazy">
-        </div>
-        <div class="rollout-block">
-          <h4 class="title is-6"><span class="tag-failure">Ours fails, FA succeeds</span> &mdash; tomato soup can</h4>
-          <img src="static/images/rollout_s1_failure.png" class="result-figure" alt="S1 failure: tomato soup can" loading="lazy">
-        </div>
-      </div>
-
-      <div class="rollout-panel" id="panel-s3">
-        <div class="rollout-block">
-          <h4 class="title is-6"><span class="tag-success">Ours succeeds, FA fails</span> &mdash; wood block</h4>
-          <img src="static/images/rollout_s3_success.png" class="result-figure" alt="S3 success: wood block" loading="lazy">
-        </div>
-        <div class="rollout-block">
-          <h4 class="title is-6"><span class="tag-failure">Ours fails, FA succeeds</span> &mdash; gelatin box</h4>
-          <img src="static/images/rollout_s3_failure.png" class="result-figure" alt="S3 failure: gelatin box" loading="lazy">
-        </div>
-      </div>
-
-      <div class="rollout-panel" id="panel-s1xs3">
-        <div class="rollout-block">
-          <h4 class="title is-6"><span class="tag-success">Success</span> &mdash; wood block</h4>
-          <img src="static/images/rollout_s1xs3_success.png" class="result-figure" alt="S1xS3 success: wood block" loading="lazy">
-        </div>
-        <div class="rollout-block">
-          <h4 class="title is-6"><span class="tag-failure">Failure</span> &mdash; bleach cleanser</h4>
-          <img src="static/images/rollout_s1xs3_failure.png" class="result-figure" alt="S1xS3 failure: bleach cleanser" loading="lazy">
-        </div>
-      </div>
-
-      <p class="figure-caption">
-        A common failure mode is insufficient grasp support from the position targets, causing the object to slip or drop.
+  <button id="motion-toggle" class="motion-toggle" type="button" aria-label="Pause videos" aria-pressed="false"></button>
+  <main>
+    <header class="project-header">
+      <h1><span class="project-name">Amortizing Force-Aware Retargeting</span><span class="project-subtitle">for Scalable Human-to-Robot Data Generation</span></h1>
+      <p class="project-authors">
+        <span>Sohyeon Im</span>,
+        <span><a href="https://scholar.google.com/citations?user=dmKMF4AAAAAJ&amp;hl=en" target="_blank" rel="noopener noreferrer">Sangmoon Lee</a><sup>*</sup></span>
       </p>
-    </div>
-  </section>
+      <p class="project-affiliation">School of Electronic and Electrical Engineering<br>Kyungpook National University</p>
+      <p class="project-correspondence"><sup>*</sup> Corresponding author</p>
+      <nav class="project-actions" aria-label="Project links">
+        <!-- TODO: code link -->
+        <!-- TODO: poster link: <a class="poster-link" href="static/pdfs/poster.pdf" target="_blank" rel="noopener noreferrer">…Poster</a> -->
+        <span class="pending" aria-disabled="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2h7l4 4v12H5Zm7 0v4h4M8 10h5m-5 3h5"/></svg>Poster (coming soon)</span>
+        <span class="pending" aria-disabled="true"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m6 5-5 5 5 5m8-10 5 5-5 5m-3-13-2 16"/></svg>Code (coming soon)</span>
+        <a class="results-link" href="#rollouts">Explore Rollouts <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v14m-5-5 5 5 5-5"/></svg></a>
+      </nav>
+    </header>
 
-  <!-- Amortization -->
-  <section class="section hero is-light">
-    <div class="container is-max-desktop">
-      <div class="columns is-centered">
-        <div class="column">
-          <h2 class="title is-3 has-text-centered">Amortization and Scalable Data Generation</h2>
-          <img src="static/images/yield.png" class="result-figure" alt="Projected successful trajectory yield vs GPU hours" loading="lazy">
-          <p class="figure-caption">
-            Projected successful trajectory yield under constant processing times and success rates. Shaded regions indicate initial costs;
-            circles mark break-even points between FA and our method.
-          </p>
-          <div class="content has-text-justified mt-4">
-            <p>
-              Including the initial cost of supervision generation and training (24.8 / 26.0 GPU-hours on an RTX 3090 for S1 / S3),
-              residual prediction matches per-demonstration FA optimization in cumulative successful trajectories at
-              <b>37.1 GPU-hours (S1)</b> and <b>35.8 GPU-hours (S3)</b>, and yields more successful trajectories beyond these points.
-              These projections are based on single-process timings and assume a sufficient supply of new demonstrations.
-            </p>
-          </div>
-        </div>
+    <section id="rollouts" class="rollouts" aria-labelledby="rollouts-title">
+      <h2 id="rollouts-title">Rollout Videos</h2>
+      <div class="prose">
+        <p>Every test demonstration, executed open-loop in simulation by each method. Galleries share the same order, so the same position shows the same demonstration (until <em>Only successes</em> hides each method's failures). Click a clip to compare CA, direct prediction, and Ours side by side.</p>
       </div>
-    </div>
-  </section>
-
-  <!-- BibTeX -->
-  <section class="section" id="BibTeX">
-    <div class="container is-max-desktop content">
-      <div class="bibtex-header">
-        <h2 class="title">BibTeX</h2>
-        <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="Copy BibTeX to clipboard">
-          <i class="fas fa-copy"></i>
-          <span class="copy-text">Copy</span>
-        </button>
+      <div class="gallery-bar">
+        <div class="split-tabs" role="tablist" aria-label="Evaluation split"></div>
+        <button type="button" id="only-success" class="filter-toggle" aria-pressed="false"><span class="check" aria-hidden="true">✓</span>Only successes</button>
       </div>
-      <pre id="bibtex-code"><code>@misc{im2026amortizing,
-  title  = {Amortizing Force-Aware Retargeting for Scalable Human-to-Robot Data Generation},
-  author = {Im, Sohyeon and Lee, Sangmoon},
-  year   = {2026}
-}</code></pre>
-    </div>
-  </section>
+      <section class="method-gallery" data-method="ca" aria-labelledby="ca-title">
+        <div class="method-head"><h3 id="ca-title">Contact-Aware (CA)</h3><span class="rate"></span></div>
+        <div class="video-track" tabindex="0" aria-label="CA rollout videos"></div>
+        <div class="slider-controls"><button type="button" data-slide="previous" aria-label="Previous CA videos">‹&nbsp; Prev</button><span class="page"></span><button type="button" data-slide="next" aria-label="Next CA videos">Next &nbsp;›</button></div>
+      </section>
+      <section class="method-gallery" data-method="direct" aria-labelledby="direct-title">
+        <div class="method-head"><h3 id="direct-title">Direct FA Prediction (Ablation)</h3><span class="rate"></span></div>
+        <div class="video-track" tabindex="0" aria-label="Direct FA prediction rollout videos"></div>
+        <div class="slider-controls"><button type="button" data-slide="previous" aria-label="Previous Direct videos">‹&nbsp; Prev</button><span class="page"></span><button type="button" data-slide="next" aria-label="Next Direct videos">Next &nbsp;›</button></div>
+      </section>
+      <section class="method-gallery" data-method="ours" aria-labelledby="ours-title">
+        <div class="method-head"><h3 id="ours-title">CA + Residual (Ours)</h3><span class="rate"></span></div>
+        <div class="video-track" tabindex="0" aria-label="Ours rollout videos"></div>
+        <div class="slider-controls"><button type="button" data-slide="previous" aria-label="Previous Ours videos">‹&nbsp; Prev</button><span class="page"></span><button type="button" data-slide="next" aria-label="Next Ours videos">Next &nbsp;›</button></div>
+      </section>
+      <p class="legend"><span class="ok">✓</span> / <span class="bad">✗</span> success / failure with the maximum object position error. Direct FA prediction is the ablation of Ours: same inputs, data, and MLP, but it regresses full FA controls instead of residuals to CA. Both learned methods show the seed-0 model, so their rates differ slightly from the three-seed means in the table. A common failure mode is insufficient grasp support from the position targets, causing the object to slip or drop.</p>
+    </section>
 
+    <section id="results" class="quantitative" aria-labelledby="results-title">
+      <h2 id="results-title">Generalization to Unseen Subjects and Objects</h2>
+      <div class="prose">
+        <p>We retarget DexYCB human demonstrations to a LEAP Hand in simulation and evaluate on the official <strong>S1</strong> (unseen subjects) and <strong>S3</strong> (unseen objects) splits, plus an exploratory <strong>S1&times;S3</strong> setting combining both exclusions. A rollout succeeds when the maximum object position error stays below 50&nbsp;mm.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Method</th><th>Unseen subjects (S1)</th><th>Unseen objects (S3)</th><th>Both (S1&times;S3)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>CA</td><td>2.0</td><td>0.0</td><td>0.0</td></tr>
+            <tr><td>Direct FA prediction</td><td>9.9</td><td>16.2</td><td>&ndash;</td></tr>
+            <tr class="ours"><td>CA + Residual (Ours)</td><td>33.7 &plusmn; 4.3</td><td>47.4 &plusmn; 3.5</td><td>55.6 &plusmn; 3.8</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-note">Execution success rate (%). Ours reports mean &plusmn; sample standard deviation over three seeds. Direct FA prediction uses the same inputs, data, and MLP but regresses full FA controls instead of residuals.</p>
+    </section>
+
+    <section class="project-abstract prose" aria-labelledby="abstract-title">
+      <h2 id="abstract-title" class="centered">Abstract</h2>
+      <p>We present a framework that amortizes force-aware retargeting by learning reusable control corrections from physics-optimized robot trajectories. Human demonstrations offer scalable data for robot learning, but kinematic retargeting does not guarantee physical executability, while physics-based optimization is costly for each demonstration. Our framework replaces per-demonstration force-aware optimization with learned residual corrections. This approach is implemented by training a lightweight MLP to predict the residual between contact-aware reference controls and force-aware optimized controls generated by <a href="https://wmz1226.github.io/DexForge/" target="_blank" rel="noopener noreferrer">DexForge</a>. The predicted residuals are added to the contact-aware reference controls to generate corrected control trajectories for new demonstrations. Through simulation experiments retargeting DexYCB human demonstrations to a LEAP Hand, we achieve execution success rates of 33.7% on unseen subjects and 47.4% on unseen objects, substantially improving upon the respective 2.0% and 0.0% success rates of the contact-aware retargeting baseline. With reduced computational cost, our approach offers a promising direction for scalable generation of physically executable robot demonstrations.</p>
+    </section>
+
+    <section id="method" class="method-overview" aria-labelledby="method-title">
+      <h2 id="method-title" class="centered">Method Overview</h2>
+      <figure>
+        <a class="figure-frame" href="static/images/overview.png" target="_blank" rel="noopener noreferrer" aria-label="Open the overview figure at full size">
+          <img src="static/images/overview.png" alt="Overview: an MLP is trained on the residual between force-aware and contact-aware controls, then adds predicted residuals to contact-aware references at inference.">
+        </a>
+        <figcaption><strong>Overview.</strong> (a) <strong>Training:</strong> an MLP predicts residual corrections from contact-aware (CA) reference and planned contact features, supervised by the difference between force-aware (FA) optimized controls and CA reference controls. (b) <strong>Inference:</strong> predicted residuals are added to CA reference controls to generate corrected trajectories for open-loop execution.</figcaption>
+      </figure>
+      <div class="prose">
+        <p><strong>Residual control learning.</strong> DexForge's contact-aware (CA) retargeting produces reference position-control targets \(u_k^{\mathrm{CA}}\) and a contact plan adapted to the robot hand; force-aware (FA) retargeting then optimizes these targets in a physics simulator to obtain \(u_k^{\mathrm{FA}}\). We learn the residual \(\Delta u_k^* = u_k^{\mathrm{FA}} - u_k^{\mathrm{CA}}\) (22-D: 6 global hand pose + 16 finger joints) with a lightweight MLP (two hidden layers of 256 units). Inputs are CA reference controls and velocities, planned fingertip contacts, the gravity direction in the object frame, and the reference object velocity.</p>
+        <p><strong>Open-loop trajectory generation.</strong> For a new demonstration we run only CA retargeting, predict the residual, and execute the corrected target \(\hat{u}_k = u_k^{\mathrm{CA}} + f_\theta(z_k)\) open-loop at 100&nbsp;Hz, replacing per-demonstration FA optimization.</p>
+      </div>
+    </section>
+
+    <section id="amortization" class="method-overview" aria-labelledby="amortization-title">
+      <h2 id="amortization-title">Amortization and Scalable Data Generation</h2>
+      <figure>
+        <div class="figure-frame"><img src="static/images/yield.png" alt="Projected successful trajectory yield versus GPU hours for FA and our method on S1 and S3" loading="lazy"></div>
+        <figcaption>Projected successful trajectory yield under constant processing times and success rates. Shaded regions indicate initial costs; circles mark break-even points between FA and our method.</figcaption>
+      </figure>
+      <div class="prose">
+        <p>Including the initial cost of supervision generation and training (24.8 / 26.0 GPU-hours on an RTX 3090 for S1 / S3), residual prediction matches per-demonstration FA optimization in cumulative successful trajectories at <strong>37.1 GPU-hours (S1)</strong> and <strong>35.8 GPU-hours (S3)</strong>, and yields more successful trajectories beyond these points. These projections are based on single-process timings and assume a sufficient supply of new demonstrations.</p>
+      </div>
+    </section>
   </main>
 
-  <footer class="footer">
-    <div class="container">
-      <div class="columns is-centered">
-        <div class="column is-8">
-          <div class="content has-text-centered">
-            <p>
-              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a>,
-              adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page,
-              licensed under <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">CC BY-SA 4.0</a>.
-            </p>
-          </div>
-        </div>
+  <div class="compare" role="dialog" aria-modal="true" aria-label="Method comparison" hidden>
+    <div class="compare-panel">
+      <div class="compare-head">
+        <div><h3></h3><p></p></div>
+        <button type="button" class="compare-close">Close</button>
       </div>
+      <div class="compare-grid"></div>
     </div>
-  </footer>
+  </div>
 
-  <script>
-    window.MathJax = { tex: { inlineMath: [['\\(', '\\)']] } };
-    document.querySelectorAll('#rollout-tabs li').forEach(function (tab) {
-      tab.addEventListener('click', function () {
-        document.querySelectorAll('#rollout-tabs li').forEach(function (t) { t.classList.remove('is-active'); });
-        document.querySelectorAll('.rollout-panel').forEach(function (p) { p.classList.remove('is-active'); });
-        tab.classList.add('is-active');
-        document.getElementById(tab.dataset.target).classList.add('is-active');
-      });
-    });
-  </script>
-  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>
+  <footer>Page design adapted from the <a href="https://wmz1226.github.io/DexForge/" target="_blank" rel="noopener noreferrer">DexForge</a> project page.</footer>
 </body>
 </html>
