@@ -17,7 +17,11 @@ let paused = reducedMotion.matches;
 let split = SPLITS[0].id;
 let onlySuccess = false;
 
-const videoURL = (clip, method) => `static/videos/${clip.split}/${clip.recording}_${method}.webm`;
+// WebKit (Safari, every iOS browser) plays VP9 but drops its alpha channel and paints it black, so it gets
+// H.264 copies flattened onto the card colour instead.
+const ua = navigator.userAgent;
+const noAlpha = /iPhone|iPad|iPod/.test(ua) || (/AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua));
+const videoURL = (clip, method) => `static/videos/${clip.split}/${clip.recording}_${method}.${noAlpha ? 'mp4' : 'webm'}`;
 const objectName = clip => clip.object.replace(/^\d+_/, '').replace(/_/g, ' ');
 const success = (clip, method) => clip.err[method] < maxMM;
 

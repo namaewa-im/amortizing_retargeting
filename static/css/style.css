@@ -1,4 +1,4 @@
-:root{--bg:#fffcff;--fg:#4b474d;--ink:#342d3a;--muted:#66606a;--soft:#918993;--rule:#e6e0e8;--card:#eae5eb;--chip:#eeebef;--accent:#4b4054;--link:#0066d9;--ok:#3d8a5a;--bad:#c0504d;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--fg);background:var(--bg);font-synthesis:none;-webkit-font-smoothing:antialiased}
+:root{--bg:#fffcff;--fg:#4b474d;--ink:#342d3a;--muted:#66606a;--soft:#918993;--rule:#e6e0e8;--card:#eae5eb;--chip:#eeebef;--accent:#4b4054;--link:#0066d9;--ok:#3d8a5a;--bad:#c0504d;font-family:'Helvetica Neue',Arial,sans-serif;color:var(--fg);background:var(--bg);color-scheme:only light;font-synthesis:none;-webkit-font-smoothing:antialiased}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg)}
 button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
