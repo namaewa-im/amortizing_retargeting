@@ -11,7 +11,8 @@ const SPLITS = [
   { id: 'S3', name: 'Unseen objects (S3)' },
   { id: 'S1xS3', name: 'Both (S1×S3)' },
 ];
-const PER_PAGE = 15;
+const phone = matchMedia('(max-width: 540px)');   // same breakpoint as the 2-column grid in style.css
+const perPage = () => (phone.matches ? 6 : 15);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 let paused = reducedMotion.matches;
 let split = SPLITS[0].id;
@@ -98,10 +99,11 @@ const galleries = METHODS.map(method => {
     const selected = clips.filter(clip => clip.split === split);
     const shown = onlySuccess ? selected.filter(clip => success(clip, method.id)) : selected;
     track.replaceChildren();
-    for (let start = 0; start < shown.length; start += PER_PAGE) {
+    const size = perPage();
+    for (let start = 0; start < shown.length; start += size) {
       const slideEl = document.createElement('div');
       slideEl.className = 'gallery-slide';
-      shown.slice(start, start + PER_PAGE).forEach(clip => slideEl.append(makeCard(clip, method.id)));
+      shown.slice(start, start + size).forEach(clip => slideEl.append(makeCard(clip, method.id)));
       track.append(slideEl);
     }
     if (!shown.length) {
@@ -262,4 +264,5 @@ toggle.addEventListener('click', () => {
 });
 document.addEventListener('visibilitychange', refresh);
 
+phone.addEventListener('change', () => { galleries.forEach(gallery => gallery.render()); refresh(); });
 select(split);
