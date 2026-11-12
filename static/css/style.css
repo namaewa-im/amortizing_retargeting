@@ -16,7 +16,7 @@ main{width:min(1080px,calc(100% - 72px));margin:42px auto 54px}
 .project-authors{margin:26px 0 0;color:#625969;font-size:clamp(16px,1.7vw,18px);line-height:1.8}
 .project-authors span{white-space:nowrap}
 .project-authors a{color:var(--link)}
-.project-authors sup{margin-left:2px;font-size:.7em;line-height:0}
+.project-authors sup,.project-correspondence sup{margin-left:2px;font-size:1.05em;font-weight:600;line-height:0;vertical-align:.3em}
 .project-affiliation{margin:12px 0 0;color:var(--fg);font-size:15px;line-height:1.6}
 .project-correspondence{margin:14px 0 0;color:#625969;font-size:14px}
 .project-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-top:28px}
